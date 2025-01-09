@@ -1,0 +1,114 @@
+# HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Tracker</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="time-tracker">
+    <h1>Time Tracker</h1>
+    <div id="tracker">
+      <button id="start-stop-btn">Start</button>
+      <p id="time-display">00:00:00</p>
+    </div>
+    <div id="analytics">
+      <h2>Productivity Analytics</h2>
+      <p>Total time tracked: <span id="total-time">00:00:00</span></p>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
+
+# CSS
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  width: 200px;
+}
+
+#time-tracker {
+  text-align: center;
+}
+
+#tracker {
+  margin-bottom: 20px;
+}
+
+#start-stop-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#time-display {
+  font-size: 24px;
+  margin-top: 10px;
+}
+
+#analytics {
+  font-size: 14px;
+}
+
+# JAVASCRIPT
+let isTracking = false;
+let startTime = 0;
+let elapsedTime = 0;
+let interval;
+
+document.getElementById("start-stop-btn").addEventListener("click", toggleTracking);
+
+function toggleTracking() {
+  if (isTracking) {
+    clearInterval(interval);
+    updateTotalTime(elapsedTime);
+    document.getElementById("start-stop-btn").textContent = "Start";
+  } else {
+    startTime = Date.now() - elapsedTime;
+    interval = setInterval(updateTimeDisplay, 1000);
+    document.getElementById("start-stop-btn").textContent = "Stop";
+  }
+  isTracking = !isTracking;
+}
+
+function updateTimeDisplay() {
+  const currentTime = Date.now();
+  elapsedTime = currentTime - startTime;
+  const timeString = formatTime(elapsedTime);
+  document.getElementById("time-display").textContent = timeString;
+}
+
+function formatTime(ms) {
+  const seconds = Math.floor(ms / 1000);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  return `${pad(hours)}:${pad(minutes)}:${pad(remainingSeconds)}`;
+}
+
+function pad(num) {
+  return num < 10 ? `0${num}` : num;
+}
+
+function updateTotalTime(ms) {
+  const totalTime = localStorage.getItem("totalTime") || 0;
+  const newTotalTime = parseInt(totalTime) + ms;
+  localStorage.setItem("totalTime", newTotalTime);
+  document.getElementById("total-time").textContent = formatTime(newTotalTime);
+}
+
+window.onload = () => {
+  const storedTotalTime = localStorage.getItem("totalTime") || 0;
+  document.getElementById("total-time").textContent = formatTime(storedTotalTime);
+};
